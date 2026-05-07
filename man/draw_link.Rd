@@ -8,6 +8,7 @@ draw_link(
   link_data,
   cfg,
   radius = NULL,
+  lwd = 0.35,
   method_col = NULL,
   default_col = "grey"
 )
@@ -18,6 +19,8 @@ draw_link(
 \item{cfg}{Plotting configuration list.}
 
 \item{radius}{Optional link radius.}
+
+\item{lwd}{Link line width.}
 
 \item{method_col}{Optional named vector of colors for different methods.}
 

@@ -4,7 +4,14 @@
 \alias{draw_histogram}
 \title{Draw Histogram Track in Genomic Mode}
 \usage{
-draw_histogram(data, height, cfg, bins = NULL, col = "grey70")
+draw_histogram(
+  data,
+  height,
+  cfg,
+  track_label = NULL,
+  bins = NULL,
+  col = "grey70"
+)
 }
 \arguments{
 \item{data}{Data frame converted from a \code{GInteractions} object.}
@@ -12,6 +19,8 @@ draw_histogram(data, height, cfg, bins = NULL, col = "grey70")
 \item{height}{Numeric. Track height.}
 
 \item{cfg}{Plotting configuration list.}
+
+\item{track_label}{Optional track label to draw on the HBV sector.}
 
 \item{bins}{Number of genomic bins per sector.}
 

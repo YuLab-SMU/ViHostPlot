@@ -8,6 +8,7 @@ draw_scatter(
   data,
   height,
   cfg,
+  track_label = NULL,
   method_col = NULL,
   point_color = "blue",
   baseline_col = "grey90"
@@ -19,6 +20,8 @@ draw_scatter(
 \item{height}{Numeric. Track height.}
 
 \item{cfg}{Plotting configuration list.}
+
+\item{track_label}{Optional track label to draw on the HBV sector.}
 
 \item{method_col}{Optional named vector of colors for different methods.}
 
