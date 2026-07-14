@@ -1,3 +1,18 @@
+# ViHostPlot 0.0.7
+
+- Added generic virus feature support for circos and linear plots:
+  - `virus_features()` to standardize viral feature interval tables.
+  - `hbv_features()` as a built-in helper for HBV genome annotation.
+- Added two new circos tracks for virus-specific layers:
+  - `track_virus_genes()` draws viral feature intervals on the virus sector.
+  - `track_virus_density()` draws event-count density over `virus_pos`.
+- Added `plot_linear_integrations()` for an independent non-circos view
+  of host-virus integration positions with optional virus feature tracks.
+- Fixed `R CMD check` NOTEs: double-escaped `\code` in roxygen, missing
+  `importFrom(utils, tail)`.
+- Changed `oncoplot()` example from `\donttest` to `\dontrun` to avoid
+  optional-dependency failures in CI.
+
 # ViHostPlot 0.0.6
 
 - Added a new user-facing API for integration visualization:

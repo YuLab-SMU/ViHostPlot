@@ -227,6 +227,53 @@ track_density <- function(height = 0.12, split_by = NULL, bins = 50,
   )
 }
 
+#' Create a virus feature track specification
+#' @param features Virus feature intervals from \code{virus_features()}.
+#' @param height Track height.
+#' @param fill Feature fill color or named vector by feature type.
+#' @param label Logical. Whether to label features.
+#' @param border_col Feature border color.
+#' @return A track object for \code{plot_integrations()}.
+#' @export
+track_virus_genes <- function(features, height = 0.08, fill = NULL,
+                              label = TRUE, border_col = "white") {
+  structure(
+    list(
+      type = "virus_genes",
+      height = height,
+      features = normalize_virus_features(features),
+      fill = fill,
+      label = label,
+      border_col = border_col,
+      subset = NULL
+    ),
+    class = "vi_track"
+  )
+}
+
+#' Create a virus-position density track specification
+#' @param height Track height.
+#' @param bins Number of bins across the virus genome.
+#' @param fill Histogram fill color.
+#' @param label Optional track label.
+#' @param subset Optional named list of filters.
+#' @return A track object for \code{plot_integrations()}.
+#' @export
+track_virus_density <- function(height = 0.12, bins = 50, fill = "#4D4D4D",
+                                label = NULL, subset = NULL) {
+  structure(
+    list(
+      type = "virus_density",
+      height = height,
+      bins = bins,
+      fill = fill,
+      label = label,
+      subset = subset
+    ),
+    class = "vi_track"
+  )
+}
+
 #' Create a link track specification
 #' @param color Column name or literal color for links.
 #' @param radius Optional link radius.
@@ -257,7 +304,7 @@ prepare_integration_tracks <- function(tracks, plot_df) {
 
   for (track in tracks) {
     if (!inherits(track, "vi_track")) {
-      stop("Each track must be created by track_ideogram(), track_sites(), track_density(), or track_links().", call. = FALSE)
+      stop("Each track must be created by track_ideogram(), track_sites(), track_density(), track_virus_genes(), track_virus_density(), or track_links().", call. = FALSE)
     }
 
     if (!is.null(track$split_by)) {
@@ -348,6 +395,28 @@ draw_integration_track <- function(track, plot_df, cfg) {
       track_label = track$label,
       bins = track$bins,
       col = track$fill
+    ))
+  }
+
+  if (track$type == "virus_genes") {
+    return(draw_virus_genes(
+      features = track$features,
+      height = track$height,
+      cfg = cfg,
+      fill = track$fill,
+      label = track$label,
+      border_col = track$border_col
+    ))
+  }
+
+  if (track$type == "virus_density") {
+    return(draw_virus_density(
+      data = data,
+      height = track$height,
+      cfg = cfg,
+      bins = track$bins,
+      col = track$fill,
+      track_label = track$label
     ))
   }
 

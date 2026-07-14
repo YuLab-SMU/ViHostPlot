@@ -8,6 +8,8 @@
 #' sequence name and length are supplied explicitly. No intermediate VCF is
 #' created and no output file is opened by this function.
 #'
+#' @importFrom utils tail
+#'
 #' @param input_file Path to a tab-delimited integration table with columns
 #'   \code{chr}, \code{host_loc}, \code{viral_loc}, \code{reads},
 #'   \code{sample}, \code{viral_strand}, and \code{method}.
@@ -317,6 +319,145 @@ draw_scatter <- function(data, height, cfg, track_label = NULL, method_col = NUL
   )
 
   invisible(NULL)
+}
+
+#' Draw Virus Feature Track in Genomic Mode
+#'
+#' @param features Virus feature intervals from \code{virus_features()}.
+#' @param height Numeric. Track height.
+#' @param cfg Plotting configuration list.
+#' @param fill Feature fill color or named vector by feature type.
+#' @param label Logical. Whether to label features.
+#' @param border_col Feature border color.
+#' @return Invisibly returns \code{NULL}.
+draw_virus_genes <- function(features, height, cfg, fill = NULL, label = TRUE,
+                             border_col = "white") {
+  virus_length <- cfg$data$end[cfg$data$chr == cfg$virus_name][1]
+  feature_df <- layout_virus_features(features, virus_length = virus_length)
+  feature_df$chr <- cfg$virus_name
+  feature_df$ymin <- feature_df$level - 0.85
+  feature_df$ymax <- feature_df$level - 0.15
+
+  feature_fill <- if (is.null(fill)) {
+    normalize_named_colors(grDevices::hcl.colors(length(unique(feature_df$type)), "Set 3"), unique(feature_df$type))
+  } else {
+    normalize_named_colors(fill, unique(feature_df$type))
+  }
+  feature_df$fill <- unname(feature_fill[feature_df$type])
+
+  feature_region <- feature_df[, c("chr", "start", "end"), drop = FALSE]
+  feature_region$start <- pmax(0, pmin(feature_region$start, virus_length))
+  feature_region$end <- pmax(0, pmin(feature_region$end, virus_length))
+  feature_value <- feature_df[, c("ymin", "ymax", "fill", "feature"), drop = FALSE]
+
+  circlize::circos.genomicTrackPlotRegion(
+    data = cbind(feature_region, feature_value),
+    ylim = c(0, max(feature_df$level)),
+    track.height = height,
+    bg.border = NA,
+    panel.fun = function(region, value, ...) {
+      chr <- circlize::CELL_META$sector.index
+      if (!identical(chr, cfg$virus_name)) {
+        return(NULL)
+      }
+
+      circlize::circos.genomicRect(
+        region,
+        value,
+        ybottom = value$ymin,
+        ytop = value$ymax,
+        col = value$fill,
+        border = border_col
+      )
+
+      if (isTRUE(label)) {
+        circlize::circos.genomicText(
+          region,
+          value,
+          y = (value$ymin + value$ymax) / 2,
+          labels.column = "feature",
+          facing = "bending.inside",
+          niceFacing = TRUE,
+          cex = 0.45
+        )
+      }
+    }
+  )
+
+  invisible(NULL)
+}
+
+#' Draw Virus Density Track in Genomic Mode
+#'
+#' @param data Data frame converted from integration records.
+#' @param height Numeric. Track height.
+#' @param cfg Plotting configuration list.
+#' @param bins Number of bins across the virus genome.
+#' @param col Histogram fill color.
+#' @param track_label Optional track label.
+#' @return Invisibly returns \code{NULL}.
+draw_virus_density <- function(data, height, cfg, bins = 50, col = "#4D4D4D",
+                               track_label = NULL) {
+  if (is.null(data) || nrow(data) == 0) {
+    return(invisible(NULL))
+  }
+
+  hist_df <- make_virus_histogram_data(data = data, cfg = cfg, bins = bins)
+  max_count <- max(hist_df$count, na.rm = TRUE)
+  if (!is.finite(max_count) || max_count <= 0) {
+    max_count <- 1
+  }
+
+  circlize::circos.genomicTrackPlotRegion(
+    data = hist_df,
+    ylim = c(0, max_count),
+    track.height = height,
+    bg.border = NA,
+    panel.fun = function(region, value, ...) {
+      chr <- circlize::CELL_META$sector.index
+      if (!identical(chr, cfg$virus_name)) {
+        return(NULL)
+      }
+
+      circlize::circos.genomicRect(
+        region,
+        value,
+        ybottom = 0,
+        ytop = value$count,
+        col = col,
+        border = NA
+      )
+
+      if (!is.null(track_label)) {
+        draw_track_label(track_label, y = max_count * 0.8)
+      }
+    }
+  )
+
+  invisible(NULL)
+}
+
+make_virus_histogram_data <- function(data, cfg, bins = 50) {
+  if (!is.numeric(bins) || length(bins) != 1 || is.na(bins) || bins < 1) {
+    stop("bins must be a positive integer.", call. = FALSE)
+  }
+  bins <- as.integer(bins)
+
+  virus_length <- cfg$data$end[cfg$data$chr == cfg$virus_name][1]
+  breaks <- seq(0, virus_length, length.out = bins + 1)
+  pos <- data$virus_pos[!is.na(data$virus_pos)]
+  counts <- tabulate(
+    findInterval(pos, breaks, rightmost.closed = TRUE, all.inside = TRUE),
+    nbins = bins
+  )
+
+  data.frame(
+    chr = cfg$virus_name,
+    start = breaks[-length(breaks)],
+    end = breaks[-1],
+    count = counts,
+    stringsAsFactors = FALSE
+  )
 }
 
 #' Draw Link Layer in Genomic Mode
