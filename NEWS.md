@@ -1,4 +1,14 @@
-# ViHostPlot 0.0.7
+# virolink 0.0.8
+
+- Added `plot_integration_landscape()` for a host-genome overview of viral
+  integration sites or binned event density.
+- Added optional grouping and color mapping to compare integration landscapes
+  across samples, methods, or other columns.
+- Reorganized the main vignette around the viral-integration analysis workflow
+  and added a roadmap for planned visualization capabilities.
+- Corrected `Authors@R` to identify a single package maintainer.
+
+# virolink 0.0.7
 
 - Added generic virus feature support for circos and linear plots:
   - `virus_features()` to standardize viral feature interval tables.

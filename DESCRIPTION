@@ -1,10 +1,10 @@
 Package: virolink
 Title: Visualization of Viral Integration in Host Genomes
-Version: 0.0.7
+Version: 0.0.8
 Authors@R: c(
   person("Guangchuang", "Yu", email = "guangchuangyu@gmail.com", role = c("aut", "ctb"), comment = c(ORCID = "0000-0002-6485-8781")),
   person("Jianjian", "Sun", email = "2390024611@qq.com", role = c("aut", "cre")),
-  person("Shuangbin", "Xu", email = "xshuangbin@163.com", role = c("aut", "cre"), comment = c(ORCID = "0000-0003-3513-5362")))
+  person("Shuangbin", "Xu", email = "xshuangbin@163.com", role = "aut", comment = c(ORCID = "0000-0003-3513-5362")))
 Description: Provides a framework for exploring and visualizing viral
     integration events in host genomes. It standardizes integration records
     and supports examination of their genomic distribution, virus-host
@@ -26,9 +26,11 @@ Imports:
     stats
 Suggests:
     quarto,
-    knitr
+    knitr,
+    testthat (>= 3.0.0)
 License: Artistic-2.0
 VignetteBuilder: quarto
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Config/roxygen2/version: 8.0.0
+Config/testthat/edition: 3
