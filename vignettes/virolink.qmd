@@ -43,11 +43,14 @@ extdata_path <- function(file) {
 chrom_file <- extdata_path("chrom_sizes.txt")
 chrom_color_file <- extdata_path("chrom_color.txt")
 integration_file <- extdata_path("data.txt")
+host_feature_file <- extdata_path("host_features.txt")
 
 chrom_colors <- read.delim(chrom_color_file, sep = "\t", stringsAsFactors = FALSE)
 host_colors <- stats::setNames(chrom_colors$color, sub("^chr", "", chrom_colors$chr))
 
 integrations <- read_integrations(integration_file)
+host_feature_table <- read.delim(host_feature_file, sep = "\t", stringsAsFactors = FALSE)
+host_features_demo <- host_features(host_feature_table)
 host <- host_genome(host = NULL, chrom_file = chrom_file, colors = host_colors)
 virus <- c(HBV = 3215)
 hbv <- hbv_features()
@@ -108,6 +111,30 @@ plot_breakpoint_map(
   host = host,
   virus = virus,
   features = hbv,
+  group_by = "method",
+  size_by = "support"
+)
+```
+
+## Zoom into a host locus
+
+Once a region or breakpoint looks interesting, inspect the local context. The
+locus view focuses on one host coordinate, shows nearby integration evidence,
+and can overlay local annotations supplied as a small feature table.
+
+```{r}
+#| label: locus-context-demo
+#| fig-width: 10
+#| fig-height: 3.8
+#| message: false
+#| warning: false
+
+plot_locus_context(
+  integrations,
+  chr = "2",
+  pos = 62717949,
+  window = 5000,
+  annotations = host_features_demo,
   group_by = "method",
   size_by = "support"
 )
@@ -179,8 +206,6 @@ plot_linear_integrations(
 The vignette will grow along the same analytical path as new capabilities are
 implemented:
 
-- **Locus context:** inspect genes, transcripts, regulatory annotations, and
-  evidence around a selected host breakpoint.
 - **Cohort comparison:** summarize integration events across samples, genes,
   host regions, and viral features.
 - **Mechanism and clonality:** examine breakpoint signatures and changes across

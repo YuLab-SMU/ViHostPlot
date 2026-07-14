@@ -1,0 +1,5 @@
+chr	start	end	feature	type	strand
+chr2	62715000	62716000	demo_upstream_region	regulatory	.
+chr2	62717000	62718400	demo_breakpoint_region	regulatory	.
+chr2	62717800	62719000	demo_transcript_model	transcript	+
+chr2	62720500	62722500	demo_downstream_region	regulatory	.

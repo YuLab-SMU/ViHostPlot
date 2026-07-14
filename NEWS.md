@@ -1,3 +1,12 @@
+# virolink 0.0.10
+
+- Added `host_features()` to standardize local host annotation intervals for
+  locus-level visualization.
+- Added `plot_locus_context()` to inspect integration evidence around a
+  selected host breakpoint with optional host feature annotations.
+- Added a small demo host-feature table and a runnable locus-context example
+  to the vignette workflow.
+
 # virolink 0.0.9
 
 - Added `plot_breakpoint_map()` to compare host-genome breakpoint positions
