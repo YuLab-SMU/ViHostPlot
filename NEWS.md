@@ -1,3 +1,12 @@
+# virolink 0.0.9
+
+- Added `plot_breakpoint_map()` to compare host-genome breakpoint positions
+  with viral-genome breakpoint positions in a single two-dimensional view.
+- Added optional virus feature bands, group-based point colors, and numeric
+  point-size mapping for breakpoint maps.
+- Updated the vignette with a runnable breakpoint-map example in the main
+  viral-integration visualization workflow.
+
 # virolink 0.0.8
 
 - Added `plot_integration_landscape()` for a host-genome overview of viral

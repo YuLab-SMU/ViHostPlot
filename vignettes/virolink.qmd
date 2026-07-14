@@ -90,6 +90,29 @@ plot_integration_landscape(
 Use `mode = "sites"` when supporting-read depth and exact event positions are
 more important than regional counts.
 
+## Map host and virus breakpoints
+
+The breakpoint map keeps the host genome on a continuous x-axis and places the
+viral breakpoint coordinate on the y-axis. It is a compact way to ask whether
+host-side recurrence and virus-side recurrence are coupled.
+
+```{r}
+#| label: breakpoint-map-demo
+#| fig-width: 10
+#| fig-height: 4.8
+#| message: false
+#| warning: false
+
+plot_breakpoint_map(
+  integrations,
+  host = host,
+  virus = virus,
+  features = hbv,
+  group_by = "method",
+  size_by = "support"
+)
+```
+
 ## Connect host and virus coordinates
 
 After surveying the host landscape, use a linked view to examine which host
@@ -156,7 +179,6 @@ plot_linear_integrations(
 The vignette will grow along the same analytical path as new capabilities are
 implemented:
 
-- **Breakpoint map:** compare host and virus breakpoint coordinates at scale.
 - **Locus context:** inspect genes, transcripts, regulatory annotations, and
   evidence around a selected host breakpoint.
 - **Cohort comparison:** summarize integration events across samples, genes,
