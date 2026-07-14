@@ -1,0 +1,117 @@
+---
+title: "virolink Quick Start"
+format:
+  html:
+    toc: true
+    number-sections: true
+vignette: >
+  %\VignetteIndexEntry{virolink Quick Start}
+  %\VignetteEngine{quarto::html}
+  %\VignetteEncoding{UTF-8}
+---
+
+This vignette shows the main user-facing workflow in virolink:
+
+1. read a standardized integration table
+2. define host and virus genome objects
+3. compose a circos-style integration plot with track objects
+4. render a linear integration view for comparison
+
+The example data comes from `inst/extdata/`, and the plots use local
+chromosome-size and color tables so the demo does not depend on network access.
+
+## Setup
+
+```{r}
+#| label: setup
+#| include: false
+#| message: false
+#| warning: false
+
+library(virolink)
+
+extdata_path <- function(file) {
+  pkg_path <- system.file("extdata", file, package = "virolink")
+  if (!nzchar(pkg_path)) {
+    stop("Could not locate extdata file: ", file, call. = FALSE)
+  }
+  pkg_path
+}
+
+chrom_file <- extdata_path("chrom_sizes.txt")
+chrom_color_file <- extdata_path("chrom_color.txt")
+integration_file <- extdata_path("data.txt")
+
+chrom_colors <- read.delim(chrom_color_file, sep = "\t", stringsAsFactors = FALSE)
+host_colors <- stats::setNames(chrom_colors$color, sub("^chr", "", chrom_colors$chr))
+
+integrations <- read_integrations(integration_file)
+host <- host_genome(host = NULL, chrom_file = chrom_file, colors = host_colors)
+virus <- c(HBV = 3215)
+hbv <- hbv_features()
+```
+
+## Circos integration plot
+
+The first figure is the main integration view. The track order controls the
+stacking order from the outside toward the center.
+
+```{r}
+#| label: circos-demo
+#| fig-width: 10
+#| fig-height: 8
+#| message: false
+#| warning: false
+
+plot_integrations(
+  integrations = integrations,
+  host = host,
+  virus = virus,
+  tracks = list(
+    track_ideogram(),
+    track_sites(
+      color = "method",
+      size = "support",
+      label = "Integration sites"
+    ),
+    track_virus_genes(
+      hbv,
+      label = TRUE
+    ),
+    track_virus_density(
+      label = "Virus-position density"
+    ),
+    track_links(color = "method")
+  ),
+  visual_ratio = 0.12
+)
+```
+
+## Linear view
+
+The linear plot gives a simple one-dimensional view of the same integration
+records. It is often useful when you want a quick sanity check or a figure that
+is easier to read in a report.
+
+```{r}
+#| label: linear-demo
+#| fig-width: 10
+#| fig-height: 4.5
+#| message: false
+#| warning: false
+
+plot_linear_integrations(
+  integrations = integrations,
+  host = host,
+  virus = virus,
+  features = hbv
+)
+```
+
+## Notes
+
+- Use `read_integrations()` for the standardized input format.
+- Use `host_genome()` and `virus_genome()` when you want to make the input
+  explicit and reusable.
+- Build plots with `track_*()` objects and pass them to `plot_integrations()`.
+- `plot_oncoprint()` follows the same design philosophy for mutation summaries.
