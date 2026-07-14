@@ -11,7 +11,6 @@ Description: Tools for visualizing host-virus integration events with circos
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
 Depends:
     R (>= 4.1.0)
 Imports: 
@@ -27,10 +26,4 @@ Imports:
     stats,
     rlang,
     dplyr
-
-
-
-
-
-
-
+Config/roxygen2/version: 8.0.0

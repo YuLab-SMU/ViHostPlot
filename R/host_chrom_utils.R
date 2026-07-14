@@ -34,6 +34,30 @@ read_chrom_sizes <- function(path) {
   df
 }
 
+normalize_host_df <- function(df) {
+  if (!is.data.frame(df)) {
+    stop("Host genome must be provided as a data frame or a file path.", call. = FALSE)
+  }
+
+  required_cols <- c("chr", "start", "end")
+  missing_cols <- setdiff(required_cols, colnames(df))
+  if (length(missing_cols) > 0) {
+    stop("Host genome data frame must contain columns: chr, start, end", call. = FALSE)
+  }
+
+  out <- df[, required_cols, drop = FALSE]
+  out$chr <- trimws(gsub("(?i)^chr", "", as.character(out$chr)))
+  out$start <- as.numeric(out$start)
+  out$end <- as.numeric(out$end)
+  out <- out[!is.na(out$chr) & !is.na(out$start) & !is.na(out$end), , drop = FALSE]
+
+  if (nrow(out) == 0) {
+    stop("No valid chromosome sizes were found.", call. = FALSE)
+  }
+
+  out
+}
+
 resolve_ucsc_assembly <- function(host) {
   host <- tolower(trimws(as.character(host)))
 
@@ -140,6 +164,14 @@ resolve_host_chrom_sizes <- function(host = NULL, chrom_file = NULL) {
     stop("Please supply either host or chrom_file, not both.", call. = FALSE)
   }
 
+  if (inherits(host, "vi_host_genome")) {
+    return(normalize_host_df(host$data))
+  }
+
+  if (is.data.frame(host)) {
+    return(normalize_host_df(host))
+  }
+
   if (!is.null(host)) {
     return(fetch_ucsc_chrom_sizes(host))
   }
@@ -149,4 +181,51 @@ resolve_host_chrom_sizes <- function(host = NULL, chrom_file = NULL) {
   }
 
   stop("Please supply either a built-in host name or a host chromosome file.", call. = FALSE)
+}
+
+#' Construct a host genome table
+#'
+#' @param host Built-in host name, chromosome table, or \code{NULL} when
+#'   \code{chrom_file} is supplied.
+#' @param chrom_file Optional path to a chromosome-size table.
+#' @param colors Optional named vector of chromosome colors.
+#' @return A host genome object with class \code{vi_host_genome}.
+#' @export
+host_genome <- function(host = "hg38", chrom_file = NULL, colors = NULL) {
+  data <- resolve_host_chrom_sizes(host = host, chrom_file = chrom_file)
+  structure(
+    list(data = data, colors = colors),
+    class = "vi_host_genome"
+  )
+}
+
+#' Construct a virus genome table
+#'
+#' @param name Virus sequence name, or a named numeric vector of length 1.
+#' @param length Virus sequence length in base pairs.
+#' @return A virus genome object with class \code{vi_virus_genome}.
+#' @export
+virus_genome <- function(name, length = NULL) {
+  if (is.null(length) && is.numeric(name) && length(name) == 1 && !is.null(names(name))) {
+    length <- unname(name)
+    name <- names(name)
+  }
+
+  name <- trimws(gsub("(?i)^chr", "", as.character(name)))
+  if (length(name) != 1 || is.na(name) || !nzchar(name)) {
+    stop("Virus name must be a single non-empty string.", call. = FALSE)
+  }
+
+  if (!is.numeric(length) || length(length) != 1 || is.na(length) || length <= 0) {
+    stop("Virus length must be a single positive number.", call. = FALSE)
+  }
+
+  structure(
+    list(
+      data = data.frame(chr = name, start = 0, end = as.numeric(length), stringsAsFactors = FALSE),
+      name = name,
+      length = as.numeric(length)
+    ),
+    class = "vi_virus_genome"
+  )
 }

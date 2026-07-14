@@ -31,8 +31,6 @@
 #'           sort_by = "FAB_classification",
 #'           clinical_order = list(FAB_classification = c("M0", "M1", "M2")))
 #' }
-utils::globalVariables(".data")
-
 oncoplot <- function(maf, genes = 20, clinical_vars = NULL, n_breaks = 5,
                      colors = NULL, sort_by = NULL,
                      clinical_order = NULL) {
@@ -54,9 +52,15 @@ oncoplot <- function(maf, genes = 20, clinical_vars = NULL, n_breaks = 5,
     aplot::insert_top(p_top, height = 0.2) |>
     aplot::insert_right(p_right, width = 0.2)
 
-  tracks <- oncoplot_clinical_track(maf, genes = genes, clinical_vars = clinical_vars,
-                                    n_breaks = n_breaks, colors = colors,
-                                    sample_order = sample_order)
+  tracks <- oncoplot_clinical_track(
+    maf,
+    genes = genes,
+    clinical_vars = clinical_vars,
+    n_breaks = n_breaks,
+    colors = colors,
+    sample_order = sample_order,
+    clinical_order = clinical_order
+  )
 
   if (length(tracks) > 0) {
     for (var in names(tracks)) {
@@ -95,7 +99,8 @@ oncoplot_main <- function(maf, genes = 20, sample_order = NULL) {
 #' @importFrom rlang .data
 #' @importFrom dplyr select mutate transmute all_of
 oncoplot_clinical_track <- function(maf, genes = 20, clinical_vars, n_breaks,
-                                    colors = NULL, sample_order = NULL) {
+                                    colors = NULL, sample_order = NULL,
+                                    clinical_order = NULL) {
 
   if (is.null(clinical_vars)) return(list())
 
@@ -129,6 +134,8 @@ oncoplot_clinical_track <- function(maf, genes = 20, clinical_vars, n_breaks,
 
     tmp$value <- if (is_continuous) {
       binning_numeric(tmp$value, n_breaks = n_breaks)
+    } else if (!is.null(clinical_order) && var %in% names(clinical_order)) {
+      factor(tmp$value, levels = clinical_order[[var]])
     } else {
       as.factor(tmp$value)
     }
@@ -307,8 +314,11 @@ binning_numeric <- function(x, n_breaks = 5) {
   lvls <- levels(binned)
   lvls <- gsub("\\.0", "", lvls)
   lvls <- gsub("\\(|\\[|\\]", "", lvls)
-  lvls <- gsub(",", "–", lvls)
+  lvls <- gsub(",", " - ", lvls)
   levels(binned) <- lvls
 
   return(binned)
 }
+
+utils::globalVariables(".data")
+

@@ -1,4 +1,4 @@
-chr	host_loc	viral_loc	reads	sample	viral_strand	method
+host_chr	host_pos	virus_pos	support	sample	virus_strand	method
 chr1	14679192	826	49	T	-	Pos
 chr1	162869909	1300	84	N	-	Pos
 chr10	42400679	2994	52	T	+	Pos

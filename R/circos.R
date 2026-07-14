@@ -42,111 +42,21 @@ visualize_viral_integration <- function(input_file,
                                         layout_list,
                                         visual_ratio = 0.1,
                                         clear = TRUE) {
-  validate_layout_list(layout_list)
+  integrations <- read_integrations(input_file)
+  tracks <- legacy_layout_to_tracks(layout_list)
 
-  cfg <- create_config(
-    host = host,
-    chrom_file = chrom_file,
-    virus_name = virus_name,
-    virus_length = virus_length,
-    visual_ratio = visual_ratio
-  )
-  gi <- create_gi_from_table(input_file = input_file, cfg = cfg)
-  plot_df <- as.data.frame(gi)
-
-  if (clear) {
-    circlize::circos.clear()
-  }
-
-  n_sectors <- nrow(cfg$data)
-  gaps <- rep(1, n_sectors)
-  virus_idx <- which(cfg$data$chr == cfg$virus_name)
-  if (length(virus_idx) > 0) {
-    gaps[virus_idx] <- 10
-  }
-
-  circlize::circos.par(
-    start.degree = 90,
-    gap.degree = gaps,
-    cell.padding = c(0, 0, 0, 0),
-    points.overflow.warning = FALSE
+  plot_obj <- plot_integrations(
+    integrations = integrations,
+    host = if (!is.null(host)) host else chrom_file,
+    virus = stats::setNames(virus_length, virus_name),
+    tracks = tracks,
+    visual_ratio = visual_ratio,
+    clear = clear
   )
 
-  circos_df <- cfg$data[, c("chr", "start", "end"), drop = FALSE]
-  circlize::circos.genomicInitialize(
-    circos_df,
-    plotType = NULL,
-    sector.width = cfg$widths
-  )
+  gi <- create_gi_from_table(input_file = input_file, cfg = plot_obj$cfg)
 
-  for (i in seq_along(layout_list)) {
-    task <- layout_list[[i]]
-    height <- if (is.null(task$height)) 0.05 else task$height
-
-    if (task$type == "ideogram") {
-      args <- list(height = height, cfg = cfg)
-      if (!is.null(task$grid_col)) {
-        args$grid_col <- task$grid_col
-      }
-      if (!is.null(task$border_col)) {
-        args$border_col <- task$border_col
-      }
-      do.call(draw_ideogram, args)
-    } else if (task$type == "scatter") {
-      sub_df <- filter_plot_data(plot_df, sample_label = task$sample_label)
-      args <- list(data = sub_df, height = height, cfg = cfg)
-      if (!is.null(task$sample_label)) {
-        args$track_label <- task$sample_label
-      }
-      if (!is.null(task$method_col)) {
-        args$method_col <- task$method_col
-      }
-      if (!is.null(task$point_color)) {
-        args$point_color <- task$point_color
-      }
-      if (!is.null(task$baseline_col)) {
-        args$baseline_col <- task$baseline_col
-      }
-      do.call(draw_scatter, args)
-    } else if (task$type == "histogram") {
-      sub_df <- filter_plot_data(plot_df, sample_label = task$sample_label)
-      args <- list(data = sub_df, height = height, cfg = cfg)
-      if (!is.null(task$sample_label)) {
-        args$track_label <- task$sample_label
-      }
-      if (!is.null(task$bins)) {
-        args$bins <- task$bins
-      }
-      if (!is.null(task$col)) {
-        args$col <- task$col
-      }
-      do.call(draw_histogram, args)
-    } else if (task$type == "links") {
-      args <- list(link_data = plot_df, cfg = cfg)
-      if (!is.null(task$radius)) {
-        args$radius <- task$radius
-      }
-      if (!is.null(task$lwd)) {
-        args$lwd <- task$lwd
-      }
-      if (!is.null(task$method_col)) {
-        args$method_col <- task$method_col
-      }
-      if (!is.null(task$default_col)) {
-        args$default_col <- task$default_col
-      }
-      do.call(draw_link, args)
-    } else {
-      warning("Skipping unsupported track type: ", task$type)
-    }
-  }
-
-  legend_spec <- get_method_legend_spec(layout_list, plot_df)
-  if (!is.null(legend_spec)) {
-    draw_method_legend(legend_spec)
-  }
-
-  invisible(list(cfg = cfg, gi = gi, data = plot_df))
+  invisible(list(cfg = plot_obj$cfg, gi = gi, data = plot_obj$plot_df))
 }
 
 validate_virus_info <- function(virus_name, virus_length, host_chr) {
@@ -229,25 +139,12 @@ create_gi_from_table <- function(input_file, cfg) {
     stop("File not found: ", input_file)
   }
 
-  raw <- utils::read.table(
-    input_file,
-    header = TRUE,
-    sep = "\t",
-    stringsAsFactors = FALSE,
-    check.names = FALSE
-  )
+  raw <- as.data.frame(as_integrations(input_file), stringsAsFactors = FALSE)
 
-  required_cols <- c("chr", "host_loc", "viral_loc", "reads", "sample", "viral_strand", "method")
-  missing_cols <- setdiff(required_cols, colnames(raw))
-  if (length(missing_cols) > 0) {
-    stop("data.txt must contain columns: ", paste(required_cols, collapse = ", "))
-  }
-
-  raw$chr <- trimws(gsub("(?i)^chr", "", as.character(raw$chr), perl = TRUE))
-  host_chr <- raw$chr
+  host_chr <- raw$host_chr
   virus_chr <- rep(cfg$virus_name, nrow(raw))
-  host_pos <- as.numeric(raw$host_loc)
-  virus_pos <- as.numeric(raw$viral_loc)
+  host_pos <- as.numeric(raw$host_pos)
+  virus_pos <- as.numeric(raw$virus_pos)
 
   keep <- !is.na(host_chr) & host_chr %in% cfg$data$chr & !is.na(host_pos) & !is.na(virus_pos)
   if (!all(keep)) {
@@ -271,7 +168,7 @@ create_gi_from_table <- function(input_file, cfg) {
   gr_virus <- GenomicRanges::GRanges(
     seqnames = virus_chr,
     ranges = IRanges::IRanges(virus_pos, width = 1),
-    strand = raw$viral_strand
+    strand = raw$virus_strand
   )
 
   suppressWarnings(
@@ -279,10 +176,10 @@ create_gi_from_table <- function(input_file, cfg) {
       gr_host,
       gr_virus,
       mode = "strict",
-      Depth = as.numeric(raw$reads),
+      Depth = as.numeric(raw$support),
       Label = raw$sample,
       Source = raw$method,
-      ViralStrand = raw$viral_strand
+      ViralStrand = raw$virus_strand
     )
   )
 }
