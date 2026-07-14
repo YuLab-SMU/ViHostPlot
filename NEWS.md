@@ -1,3 +1,12 @@
+# virolink 0.0.11
+
+- Added `plot_cohort_comparison()` for comparing integration burden across
+  samples, cohorts, methods, or other user-supplied grouping columns.
+- Added support for event counts, total supporting reads, stacked composition,
+  within-group proportions, and optional collapsing of low-frequency
+  categories.
+- Updated the vignette with a runnable cohort-comparison example.
+
 # virolink 0.0.10
 
 - Added `host_features()` to standardize local host annotation intervals for

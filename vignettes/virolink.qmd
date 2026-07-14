@@ -68,6 +68,27 @@ integration object. The same workflow accepts an in-memory data frame through
 integrations
 ```
 
+## Compare samples or cohorts
+
+Start at the cohort level when multiple samples or groups are present. The
+cohort comparison view summarizes integration burden and can stack the total by
+another column such as method, tissue, region, or any user-defined category.
+
+```{r}
+#| label: cohort-comparison-demo
+#| fig-width: 7
+#| fig-height: 4
+#| message: false
+#| warning: false
+
+plot_cohort_comparison(
+  integrations,
+  group_by = "sample",
+  fill_by = "method",
+  measure = "events"
+)
+```
+
 ## Survey the host-genome landscape
 
 Start with the host genome. A binned landscape reveals chromosomes and regions
@@ -206,8 +227,6 @@ plot_linear_integrations(
 The vignette will grow along the same analytical path as new capabilities are
 implemented:
 
-- **Cohort comparison:** summarize integration events across samples, genes,
-  host regions, and viral features.
 - **Mechanism and clonality:** examine breakpoint signatures and changes across
   tissues or time points when those fields are available.
 - **Interactive exploration:** link overview, breakpoint, locus, and tabular
