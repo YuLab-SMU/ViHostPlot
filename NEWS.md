@@ -1,3 +1,8 @@
+# virolink 0.1.7
+
+- Added a top-level `README.md` describing the package scope, input format,
+  main workflow, documentation entry point, and function map.
+
 # virolink 0.1.6
 
 - Fixed duplicate circular plots from `plot_integrations()` in Quarto/R

@@ -1,6 +1,6 @@
 Package: virolink
 Title: Visualization of Viral Integration in Host Genomes
-Version: 0.1.6
+Version: 0.1.7
 Authors@R: c(
   person("Guangchuang", "Yu", email = "guangchuangyu@gmail.com", role = c("aut", "ctb"), comment = c(ORCID = "0000-0002-6485-8781")),
   person("Jianjian", "Sun", email = "2390024611@qq.com", role = c("aut", "cre")),
