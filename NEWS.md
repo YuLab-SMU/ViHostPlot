@@ -1,3 +1,11 @@
+# virolink 0.1.5
+
+- Improved `plot_locus_context()` host feature annotations with softer
+  background-like fills and labels positioned above annotation intervals.
+- Added a separate host feature type legend so annotation colors are not
+  confused with integration point colors.
+- Added `show_feature_legend` to optionally hide the host feature type legend.
+
 # virolink 0.1.4
 
 - Added `plot_interactive_explorer()` for lightweight interactive exploration

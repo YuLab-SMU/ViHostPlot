@@ -108,6 +108,8 @@ host_features <- function(x = NULL, chr = NULL, start = NULL, end = NULL,
 #' @param point_size Point size used when `size_by` is `NULL`.
 #' @param size_range Point-size range used when `size_by` is supplied.
 #' @param label_annotations Logical. Whether to label annotation intervals.
+#' @param show_feature_legend Logical. Whether to show the annotation type
+#'   legend when host features are supplied.
 #' @return A `ggplot` object.
 #' @export
 plot_locus_context <- function(integrations, chr, pos, window = 5000,
@@ -115,7 +117,8 @@ plot_locus_context <- function(integrations, chr, pos, window = 5000,
                                size_by = "support", colors = NULL,
                                annotation_fill = NULL, point_size = 2.5,
                                size_range = c(1.5, 5),
-                               label_annotations = TRUE) {
+                               label_annotations = TRUE,
+                               show_feature_legend = TRUE) {
   integrations <- as.data.frame(as_integrations(integrations), stringsAsFactors = FALSE)
   chr <- normalize_locus_chr(chr)
   pos <- normalize_locus_pos(pos)
@@ -138,6 +141,10 @@ plot_locus_context <- function(integrations, chr, pos, window = 5000,
   if (!is.logical(label_annotations) || length(label_annotations) != 1L ||
       is.na(label_annotations)) {
     stop("label_annotations must be TRUE or FALSE.", call. = FALSE)
+  }
+  if (!is.logical(show_feature_legend) || length(show_feature_legend) != 1L ||
+      is.na(show_feature_legend)) {
+    stop("show_feature_legend must be TRUE or FALSE.", call. = FALSE)
   }
 
   xmin <- max(0, pos - window)
@@ -193,23 +200,32 @@ plot_locus_context <- function(integrations, chr, pos, window = 5000,
     ggplot2::geom_hline(yintercept = 1, color = "grey85", linewidth = 0.3)
 
   if (!is.null(feature_df) && nrow(feature_df) > 0L) {
+    feature_fill <- attr(feature_df, "fill_map")
     p <- p +
       ggplot2::geom_rect(
         data = feature_df,
         ggplot2::aes(xmin = .data$plot_start, xmax = .data$plot_end,
-                     ymin = .data$ymin, ymax = .data$ymax),
-        fill = feature_df$fill,
+                     ymin = .data$ymin, ymax = .data$ymax,
+                     fill = .data$type),
         color = "white",
-        alpha = 0.9
+        linewidth = 0.25,
+        alpha = 0.45
+      ) +
+      ggplot2::scale_fill_manual(
+        values = feature_fill,
+        name = "Host feature type",
+        guide = if (show_feature_legend) "legend" else "none"
       )
     if (isTRUE(label_annotations)) {
       p <- p +
         ggplot2::geom_text(
           data = feature_df,
           ggplot2::aes(x = (.data$plot_start + .data$plot_end) / 2,
-                       y = (.data$ymin + .data$ymax) / 2,
+                       y = .data$ymax + 0.025,
                        label = .data$feature),
-          size = 3,
+          size = 2.8,
+          color = "grey25",
+          vjust = 0,
           check_overlap = TRUE
         )
     }
@@ -267,7 +283,8 @@ plot_locus_context <- function(integrations, chr, pos, window = 5000,
       panel.grid.major.y = ggplot2::element_blank(),
       panel.grid.minor = ggplot2::element_blank(),
       axis.ticks.y = ggplot2::element_blank(),
-      legend.position = if (is.null(group_by) && is.null(size_by)) "none" else "right"
+      legend.position = if (is.null(group_by) && is.null(size_by) &&
+                            is.null(feature_df)) "none" else "right"
     )
 
   if (!is.null(group_by)) {
@@ -319,15 +336,30 @@ prepare_locus_features <- function(annotations, chr, xmin, xmax,
   feature_df$plot_end <- pmin(feature_df$end, xmax)
   feature_df <- layout_locus_features(feature_df)
   fill_map <- if (is.null(annotation_fill)) {
-    normalize_named_colors(
-      grDevices::hcl.colors(length(unique(feature_df$type)), "Set 3"),
-      unique(feature_df$type)
-    )
+    default_locus_feature_colors(unique(feature_df$type))
   } else {
     normalize_named_colors(annotation_fill, unique(feature_df$type))
   }
-  feature_df$fill <- unname(fill_map[feature_df$type])
+  attr(feature_df, "fill_map") <- fill_map
   feature_df
+}
+
+default_locus_feature_colors <- function(types) {
+  known_colors <- c(
+    "gene" = "#DDEAD7",
+    "transcript" = "#D8E8F2",
+    "regulatory" = "#F2E2D8",
+    "enhancer" = "#F2E2D8",
+    "promoter" = "#E8DDF2",
+    "repeat" = "#F2EFD8",
+    "feature" = "#E8E8E8"
+  )
+  fill_map <- known_colors[types]
+  missing <- is.na(fill_map)
+  if (any(missing)) {
+    fill_map[missing] <- grDevices::hcl.colors(sum(missing), "Pastel 1")
+  }
+  stats::setNames(unname(fill_map), types)
 }
 
 layout_locus_features <- function(feature_df) {

@@ -16,7 +16,8 @@ plot_locus_context(
   annotation_fill = NULL,
   point_size = 2.5,
   size_range = c(1.5, 5),
-  label_annotations = TRUE
+  label_annotations = TRUE,
+  show_feature_legend = TRUE
 )
 }
 \arguments{
@@ -44,6 +45,9 @@ colors for specific groups.}
 \item{size_range}{Point-size range used when \code{size_by} is supplied.}
 
 \item{label_annotations}{Logical. Whether to label annotation intervals.}
+
+\item{show_feature_legend}{Logical. Whether to show the annotation type
+legend when host features are supplied.}
 }
 \value{
 A \code{ggplot} object.

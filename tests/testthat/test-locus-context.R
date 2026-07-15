@@ -43,10 +43,60 @@ test_that("locus context plots integrations and annotations", {
 
   expect_s3_class(p, "ggplot")
   build <- ggplot2::ggplot_build(p)
-  point_layer <- build$data[[5]]
+  point_layers <- Filter(
+    function(layer) "shape" %in% names(layer) && "colour" %in% names(layer),
+    build$data
+  )
+  point_layer <- point_layers[[length(point_layers)]]
   expect_equal(nrow(point_layer), 2L)
   expect_gt(length(unique(point_layer$colour)), 1L)
   expect_gt(length(unique(point_layer$size)), 1L)
+  expect_true(any(vapply(
+    p$scales$scales,
+    function(scale) "fill" %in% scale$aesthetics,
+    logical(1)
+  )))
+  expect_true(any(vapply(
+    build$data,
+    function(layer) "fill" %in% names(layer) && any(layer$alpha == 0.45),
+    logical(1)
+  )))
+})
+
+test_that("locus context can hide the host feature type legend", {
+  integrations <- data.frame(
+    host_chr = c("chr2", "chr2"),
+    host_pos = c(1000, 1300),
+    virus_pos = c(10, 20),
+    support = c(5, 10),
+    sample = c("A", "B"),
+    virus_strand = c("+", "-"),
+    method = c("DNA", "RNA")
+  )
+  annotations <- host_features(
+    chr = "2",
+    start = 800,
+    end = 1600,
+    feature = "geneA",
+    type = "gene"
+  )
+
+  p <- plot_locus_context(
+    integrations,
+    chr = "2",
+    pos = 1200,
+    window = 800,
+    annotations = annotations,
+    size_by = NULL,
+    show_feature_legend = FALSE
+  )
+
+  fill_scales <- Filter(
+    function(scale) "fill" %in% scale$aesthetics,
+    p$scales$scales
+  )
+  expect_length(fill_scales, 1L)
+  expect_identical(fill_scales[[1]]$guide, "none")
 })
 
 test_that("locus context works without annotations", {
@@ -98,5 +148,9 @@ test_that("locus context validates inputs", {
   expect_error(
     plot_locus_context(integrations, chr = "2", pos = 999999),
     "No integration records were found"
+  )
+  expect_error(
+    plot_locus_context(integrations, chr = "2", pos = 1000, show_feature_legend = NA),
+    "show_feature_legend must be TRUE or FALSE"
   )
 })
