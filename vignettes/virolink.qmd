@@ -247,16 +247,27 @@ plot_linear_integrations(
 )
 ```
 
-## Planned workflow extensions
+## Explore interactively
 
-The vignette will grow along the same analytical path as new capabilities are
-implemented:
+For HTML reports, `plot_interactive_explorer()` pairs a `ggiraph` breakpoint
+map with a searchable `DT` table. Hover over points to inspect breakpoint
+details, then use the table to filter the same records by sample, method,
+coordinate, or support.
 
-- **Interactive exploration:** link overview, breakpoint, locus, and tabular
-  views for larger datasets.
+```{r}
+#| label: interactive-demo
+#| message: false
+#| warning: false
 
-These sections are roadmap placeholders only. Runnable examples will be added
-as each feature becomes part of the public API.
+plot_interactive_explorer(
+  integrations,
+  host = host,
+  virus = virus,
+  features = hbv,
+  group_by = "method",
+  size_by = "support"
+)
+```
 
 ## Workflow notes
 

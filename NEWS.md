@@ -1,3 +1,12 @@
+# virolink 0.0.14
+
+- Added `plot_interactive_explorer()` for lightweight interactive exploration
+  with a `ggiraph` host-virus breakpoint map and a searchable `DT` integration
+  table.
+- Added hover tooltips, point selection IDs, optional color and size mappings,
+  and configurable table columns for interactive reports.
+- Updated the vignette with a runnable interactive exploration example.
+
 # virolink 0.0.13
 
 - Updated oncoprint assembly to use the exported
