@@ -1,3 +1,11 @@
+# virolink 0.0.12
+
+- Added `plot_integration_signature()` for visualizing candidate clone-like
+  breakpoint clusters and viral-strand orientation signatures.
+- Added host-only and host-virus proximity rules for grouping recurrent
+  breakpoint evidence in the clonality view.
+- Updated the vignette with a runnable mechanism-and-clonality evidence view.
+
 # virolink 0.0.11
 
 - Added `plot_cohort_comparison()` for comparing integration burden across

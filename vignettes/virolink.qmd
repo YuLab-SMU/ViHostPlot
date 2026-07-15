@@ -161,6 +161,31 @@ plot_locus_context(
 )
 ```
 
+## Examine signature and clonality evidence
+
+Integration mechanism and clonality usually require additional experimental
+context. As a first evidence view, `plot_integration_signature()` summarizes
+candidate recurrent breakpoint clusters or viral-strand orientation without
+turning them into automatic biological calls.
+
+```{r}
+#| label: signature-demo
+#| fig-width: 8
+#| fig-height: 4
+#| message: false
+#| warning: false
+
+plot_integration_signature(
+  integrations,
+  mode = "clonality",
+  group_by = "sample",
+  cluster_by = "host_virus",
+  cluster_window = 1000,
+  measure = "support",
+  top_n = 8
+)
+```
+
 ## Connect host and virus coordinates
 
 After surveying the host landscape, use a linked view to examine which host
@@ -227,8 +252,6 @@ plot_linear_integrations(
 The vignette will grow along the same analytical path as new capabilities are
 implemented:
 
-- **Mechanism and clonality:** examine breakpoint signatures and changes across
-  tissues or time points when those fields are available.
 - **Interactive exploration:** link overview, breakpoint, locus, and tabular
   views for larger datasets.
 
