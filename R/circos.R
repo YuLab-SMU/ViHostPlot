@@ -192,9 +192,16 @@ create_gi_from_table <- function(input_file, cfg) {
 #' @param cfg Plotting configuration list.
 #' @param grid_col Optional named vector of sector colors.
 #' @param border_col Border color for ideogram rectangles.
+#' @param label_cex Chromosome label text size.
+#' @param axis_label_cex Genomic axis label text size.
+#' @param axis Which sectors should show genomic axis labels. One of
+#'   \code{"virus"}, \code{"all"}, or \code{"none"}.
 #' @return Invisibly returns \code{NULL}.
 #' @export
-draw_ideogram <- function(height, cfg, grid_col = NULL, border_col = "white") {
+draw_ideogram <- function(height, cfg, grid_col = NULL, border_col = "white",
+                          label_cex = 0.52, axis_label_cex = 0.25,
+                          axis = c("virus", "all", "none")) {
+  axis <- match.arg(axis)
   ideogram_df <- cfg$data[, c("chr", "start", "end"), drop = FALSE]
   grid_col <- resolve_ideogram_colors(cfg, grid_col = grid_col)
 
@@ -218,22 +225,24 @@ draw_ideogram <- function(height, cfg, grid_col = NULL, border_col = "white") {
       )
 
       circlize::circos.text(
-        mean(xlim), 1.2, chr,
+        mean(xlim), 1.25, chr,
         facing = "bending.inside",
         niceFacing = TRUE,
-        adj = c(0.5, -0.4),
-        cex = 0.95
+        adj = c(0.5, -0.2),
+        cex = ideogram_label_cex(chr, xlim, cfg, label_cex)
       )
 
-      axis_labels <- make_axis_labels(xlim, use_kb = chr == cfg$virus_name)
-      circlize::circos.axis(
-        h = 1.1,
-        major.at = axis_labels$at,
-        labels = axis_labels$labels,
-        labels.cex = 0.4,
-        direction = "outside",
-        major.tick.length = 0.02
-      )
+      if (show_ideogram_axis(chr, cfg, axis)) {
+        axis_labels <- make_axis_labels(xlim, use_kb = chr == cfg$virus_name)
+        circlize::circos.axis(
+          h = 1.1,
+          major.at = axis_labels$at,
+          labels = axis_labels$labels,
+          labels.cex = axis_label_cex,
+          direction = "outside",
+          major.tick.length = 0.02
+        )
+      }
     }
   )
 
@@ -245,13 +254,18 @@ draw_ideogram <- function(height, cfg, grid_col = NULL, border_col = "white") {
 #' @param data Data frame converted from a \code{GInteractions} object.
 #' @param height Numeric. Track height.
 #' @param cfg Plotting configuration list.
-#' @param track_label Optional track label to draw on the HBV sector.
+#' @param track_label Optional track label to draw on the virus sector.
+#' @param track_label_cex Track label text size.
+#' @param track_label_col Track label color.
 #' @param method_col Optional named vector of colors for different methods.
 #' @param point_color Default point color.
 #' @param baseline_col Baseline color for the scatter track.
 #' @return Invisibly returns \code{NULL}.
 #' @export
-draw_scatter <- function(data, height, cfg, track_label = NULL, method_col = NULL,
+draw_scatter <- function(data, height, cfg, track_label = NULL,
+                         track_label_cex = 0.8,
+                         track_label_col = "grey30",
+                         method_col = NULL,
                          point_color = "blue", baseline_col = "grey90") {
   if (is.null(data) || nrow(data) == 0) {
     return(invisible(NULL))
@@ -313,7 +327,12 @@ draw_scatter <- function(data, height, cfg, track_label = NULL, method_col = NUL
       }
 
       if (!is.null(track_label) && identical(chr, cfg$virus_name)) {
-        draw_track_label(track_label, y = 0.72)
+        draw_track_label(
+          track_label,
+          y = 0.72,
+          cex = track_label_cex,
+          col = track_label_col
+        )
       }
     }
   )
@@ -328,9 +347,15 @@ draw_scatter <- function(data, height, cfg, track_label = NULL, method_col = NUL
 #' @param cfg Plotting configuration list.
 #' @param fill Feature fill color or named vector by feature type.
 #' @param label Logical. Whether to label features.
+#' @param label_cex Feature label text size.
+#' @param label_col Feature label color.
+#' @param label_min_width Minimum feature width, in base pairs, required for
+#'   drawing an internal feature label.
 #' @param border_col Feature border color.
 #' @return Invisibly returns \code{NULL}.
 draw_virus_genes <- function(features, height, cfg, fill = NULL, label = TRUE,
+                             label_cex = 0.32, label_col = "grey20",
+                             label_min_width = 250,
                              border_col = "white") {
   virus_length <- cfg$data$end[cfg$data$chr == cfg$virus_name][1]
   feature_df <- layout_virus_features(features, virus_length = virus_length)
@@ -348,7 +373,12 @@ draw_virus_genes <- function(features, height, cfg, fill = NULL, label = TRUE,
   feature_region <- feature_df[, c("chr", "start", "end"), drop = FALSE]
   feature_region$start <- pmax(0, pmin(feature_region$start, virus_length))
   feature_region$end <- pmax(0, pmin(feature_region$end, virus_length))
-  feature_value <- feature_df[, c("ymin", "ymax", "fill", "feature"), drop = FALSE]
+  feature_df$label <- ifelse(
+    feature_df$end - feature_df$start >= label_min_width,
+    feature_df$feature,
+    NA_character_
+  )
+  feature_value <- feature_df[, c("ymin", "ymax", "fill", "feature", "label"), drop = FALSE]
 
   circlize::circos.genomicTrackPlotRegion(
     data = cbind(feature_region, feature_value),
@@ -370,21 +400,54 @@ draw_virus_genes <- function(features, height, cfg, fill = NULL, label = TRUE,
         border = border_col
       )
 
-      if (isTRUE(label)) {
+      if (isTRUE(label) && any(!is.na(value$label))) {
+        label_region <- region[!is.na(value$label), , drop = FALSE]
+        label_value <- value[!is.na(value$label), , drop = FALSE]
         circlize::circos.genomicText(
-          region,
-          value,
-          y = (value$ymin + value$ymax) / 2,
-          labels.column = "feature",
+          label_region,
+          label_value,
+          y = (label_value$ymin + label_value$ymax) / 2,
+          labels.column = "label",
           facing = "bending.inside",
           niceFacing = TRUE,
-          cex = 0.45
+          cex = label_cex,
+          col = label_col
         )
       }
     }
   )
 
   invisible(NULL)
+}
+
+show_ideogram_axis <- function(chr, cfg, axis) {
+  if (identical(axis, "none")) {
+    return(FALSE)
+  }
+  if (identical(axis, "all")) {
+    return(TRUE)
+  }
+
+  identical(chr, cfg$virus_name)
+}
+
+ideogram_label_cex <- function(chr, xlim, cfg, label_cex) {
+  if (identical(chr, cfg$virus_name)) {
+    return(max(label_cex, 0.78))
+  }
+
+  chr_width <- diff(xlim)
+  if (!is.finite(chr_width)) {
+    return(label_cex)
+  }
+  if (chr_width < 75e6) {
+    return(label_cex * 0.75)
+  }
+  if (chr_width < 125e6) {
+    return(label_cex * 0.88)
+  }
+
+  label_cex
 }
 
 #' Draw Virus Density Track in Genomic Mode
@@ -395,9 +458,13 @@ draw_virus_genes <- function(features, height, cfg, fill = NULL, label = TRUE,
 #' @param bins Number of bins across the virus genome.
 #' @param col Histogram fill color.
 #' @param track_label Optional track label.
+#' @param track_label_cex Track label text size.
+#' @param track_label_col Track label color.
 #' @return Invisibly returns \code{NULL}.
 draw_virus_density <- function(data, height, cfg, bins = 50, col = "#4D4D4D",
-                               track_label = NULL) {
+                               track_label = NULL,
+                               track_label_cex = 0.8,
+                               track_label_col = "grey30") {
   if (is.null(data) || nrow(data) == 0) {
     return(invisible(NULL))
   }
@@ -429,7 +496,12 @@ draw_virus_density <- function(data, height, cfg, bins = 50, col = "#4D4D4D",
       )
 
       if (!is.null(track_label)) {
-        draw_track_label(track_label, y = max_count * 0.8)
+        draw_track_label(
+          track_label,
+          y = max_count * 0.8,
+          cex = track_label_cex,
+          col = track_label_col
+        )
       }
     }
   )
@@ -673,7 +745,7 @@ ensure_virus_track_row <- function(df, virus_name, virus_length, defaults = list
   rbind(df, extra)
 }
 
-draw_track_label <- function(label, y, x_frac = 0.5, cex = 1.8, col = "black") {
+draw_track_label <- function(label, y, x_frac = 0.5, cex = 0.8, col = "grey30") {
   xlim <- circlize::CELL_META$cell.xlim
   x <- xlim[1] + diff(xlim) * x_frac
 

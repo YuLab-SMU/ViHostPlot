@@ -9,6 +9,8 @@ draw_scatter(
   height,
   cfg,
   track_label = NULL,
+  track_label_cex = 0.8,
+  track_label_col = "grey30",
   method_col = NULL,
   point_color = "blue",
   baseline_col = "grey90"
@@ -21,7 +23,11 @@ draw_scatter(
 
 \item{cfg}{Plotting configuration list.}
 
-\item{track_label}{Optional track label to draw on the HBV sector.}
+\item{track_label}{Optional track label to draw on the virus sector.}
+
+\item{track_label_cex}{Track label text size.}
+
+\item{track_label_col}{Track label color.}
 
 \item{method_col}{Optional named vector of colors for different methods.}
 

@@ -1,3 +1,16 @@
+# virolink 0.1.6
+
+- Fixed duplicate circular plots from `plot_integrations()` in Quarto/R
+  Markdown output by drawing returned `vi_integration_plot` objects only once.
+- Reused the same drawing path for direct plotting and printing so method
+  legends remain consistent.
+- Improved circular track labels and virus feature labels with smaller default
+  text, softer colors, and optional width filtering for dense virus annotations.
+- Added ideogram text-size controls and an `axis` option for circular plots;
+  by default, genomic axis labels are now shown only on the virus sector to
+  reduce host-chromosome label overlap.
+- Updated the circular linked-view vignette example with shorter track labels.
+
 # virolink 0.1.5
 
 - Improved `plot_locus_context()` host feature annotations with softer

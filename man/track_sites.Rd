@@ -10,6 +10,8 @@ track_sites(
   color = NULL,
   size = "support",
   label = NULL,
+  label_cex = 0.8,
+  label_col = "grey30",
   point_color = "blue",
   baseline_col = "grey90",
   subset = NULL,
@@ -26,6 +28,10 @@ track_sites(
 \item{size}{Column name or numeric constant for point size.}
 
 \item{label}{Optional track label.}
+
+\item{label_cex}{Track label text size.}
+
+\item{label_col}{Track label color.}
 
 \item{point_color}{Default point color when no mapping is provided.}
 

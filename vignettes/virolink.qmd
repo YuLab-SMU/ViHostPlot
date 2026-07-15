@@ -207,18 +207,19 @@ plot_integrations(
   host = host,
   virus = virus,
   tracks = list(
-    track_ideogram(),
+    track_ideogram(axis = "virus"),
     track_sites(
       color = "method",
       size = "support",
-      label = "Integration sites"
+      label = "Sites"
     ),
     track_virus_genes(
       hbv,
-      label = TRUE
+      label = TRUE,
+      label_min_width = 300
     ),
     track_virus_density(
-      label = "Virus-position density"
+      label = "Virus density"
     ),
     track_links(color = "method")
   ),

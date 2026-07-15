@@ -11,7 +11,8 @@ plot_integrations(
   tracks = NULL,
   visual_ratio = 0.1,
   clear = TRUE,
-  chrom_file = NULL
+  chrom_file = NULL,
+  draw = TRUE
 )
 }
 \arguments{
@@ -30,6 +31,8 @@ length 1 such as \code{c(HBV = 3215)}.}
 \item{clear}{Logical. Whether to clear the current circlize device first.}
 
 \item{chrom_file}{Optional path to a host chromosome-size table.}
+
+\item{draw}{Logical. Whether to draw the plot immediately.}
 }
 \value{
 An object of class \code{vi_integration_plot}.

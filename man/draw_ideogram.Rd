@@ -4,7 +4,15 @@
 \alias{draw_ideogram}
 \title{Draw Ideogram Track in Genomic Mode}
 \usage{
-draw_ideogram(height, cfg, grid_col = NULL, border_col = "white")
+draw_ideogram(
+  height,
+  cfg,
+  grid_col = NULL,
+  border_col = "white",
+  label_cex = 0.52,
+  axis_label_cex = 0.25,
+  axis = c("virus", "all", "none")
+)
 }
 \arguments{
 \item{height}{Numeric. Track height.}
@@ -14,6 +22,13 @@ draw_ideogram(height, cfg, grid_col = NULL, border_col = "white")
 \item{grid_col}{Optional named vector of sector colors.}
 
 \item{border_col}{Border color for ideogram rectangles.}
+
+\item{label_cex}{Chromosome label text size.}
+
+\item{axis_label_cex}{Genomic axis label text size.}
+
+\item{axis}{Which sectors should show genomic axis labels. One of
+\code{"virus"}, \code{"all"}, or \code{"none"}.}
 }
 \value{
 Invisibly returns \code{NULL}.

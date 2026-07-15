@@ -9,6 +9,8 @@ track_virus_density(
   bins = 50,
   fill = "#4D4D4D",
   label = NULL,
+  label_cex = 0.8,
+  label_col = "grey30",
   subset = NULL
 )
 }
@@ -20,6 +22,10 @@ track_virus_density(
 \item{fill}{Histogram fill color.}
 
 \item{label}{Optional track label.}
+
+\item{label_cex}{Track label text size.}
+
+\item{label_col}{Track label color.}
 
 \item{subset}{Optional named list of filters.}
 }

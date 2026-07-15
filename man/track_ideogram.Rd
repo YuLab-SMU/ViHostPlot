@@ -4,7 +4,14 @@
 \alias{track_ideogram}
 \title{Create an ideogram track specification}
 \usage{
-track_ideogram(height = 0.08, grid_col = NULL, border_col = "white")
+track_ideogram(
+  height = 0.08,
+  grid_col = NULL,
+  border_col = "white",
+  label_cex = 0.52,
+  axis_label_cex = 0.25,
+  axis = c("virus", "all", "none")
+)
 }
 \arguments{
 \item{height}{Track height.}
@@ -12,6 +19,13 @@ track_ideogram(height = 0.08, grid_col = NULL, border_col = "white")
 \item{grid_col}{Optional named vector of chromosome colors.}
 
 \item{border_col}{Border color for the ideogram rectangles.}
+
+\item{label_cex}{Chromosome label text size.}
+
+\item{axis_label_cex}{Genomic axis label text size.}
+
+\item{axis}{Which sectors should show genomic axis labels. One of
+\code{"virus"}, \code{"all"}, or \code{"none"}.}
 }
 \value{
 A track object for \code{plot_integrations()}.

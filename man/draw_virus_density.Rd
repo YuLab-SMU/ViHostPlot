@@ -10,7 +10,9 @@ draw_virus_density(
   cfg,
   bins = 50,
   col = "#4D4D4D",
-  track_label = NULL
+  track_label = NULL,
+  track_label_cex = 0.8,
+  track_label_col = "grey30"
 )
 }
 \arguments{
@@ -25,6 +27,10 @@ draw_virus_density(
 \item{col}{Histogram fill color.}
 
 \item{track_label}{Optional track label.}
+
+\item{track_label_cex}{Track label text size.}
+
+\item{track_label_col}{Track label color.}
 }
 \value{
 Invisibly returns \code{NULL}.

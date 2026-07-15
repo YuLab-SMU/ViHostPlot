@@ -160,11 +160,26 @@ split_named_filters <- function(df, subset = NULL) {
 #' @param height Track height.
 #' @param grid_col Optional named vector of chromosome colors.
 #' @param border_col Border color for the ideogram rectangles.
+#' @param label_cex Chromosome label text size.
+#' @param axis_label_cex Genomic axis label text size.
+#' @param axis Which sectors should show genomic axis labels. One of
+#'   \code{"virus"}, \code{"all"}, or \code{"none"}.
 #' @return A track object for \code{plot_integrations()}.
 #' @export
-track_ideogram <- function(height = 0.08, grid_col = NULL, border_col = "white") {
+track_ideogram <- function(height = 0.08, grid_col = NULL, border_col = "white",
+                           label_cex = 0.52, axis_label_cex = 0.25,
+                           axis = c("virus", "all", "none")) {
+  axis <- match.arg(axis)
   structure(
-    list(type = "ideogram", height = height, grid_col = grid_col, border_col = border_col),
+    list(
+      type = "ideogram",
+      height = height,
+      grid_col = grid_col,
+      border_col = border_col,
+      label_cex = label_cex,
+      axis_label_cex = axis_label_cex,
+      axis = axis
+    ),
     class = "vi_track"
   )
 }
@@ -175,6 +190,8 @@ track_ideogram <- function(height = 0.08, grid_col = NULL, border_col = "white")
 #' @param color Column name or literal color for points.
 #' @param size Column name or numeric constant for point size.
 #' @param label Optional track label.
+#' @param label_cex Track label text size.
+#' @param label_col Track label color.
 #' @param point_color Default point color when no mapping is provided.
 #' @param baseline_col Baseline color.
 #' @param subset Optional named list of filters.
@@ -183,6 +200,7 @@ track_ideogram <- function(height = 0.08, grid_col = NULL, border_col = "white")
 #' @export
 track_sites <- function(height = 0.15, split_by = NULL, color = NULL,
                         size = "support", label = NULL,
+                        label_cex = 0.8, label_col = "grey30",
                         point_color = "blue", baseline_col = "grey90",
                         subset = NULL, method_col = NULL) {
   structure(
@@ -193,6 +211,8 @@ track_sites <- function(height = 0.15, split_by = NULL, color = NULL,
       color = color,
       size = size,
       label = label,
+      label_cex = label_cex,
+      label_col = label_col,
       point_color = point_color,
       baseline_col = baseline_col,
       subset = subset,
@@ -232,11 +252,18 @@ track_density <- function(height = 0.12, split_by = NULL, bins = 50,
 #' @param height Track height.
 #' @param fill Feature fill color or named vector by feature type.
 #' @param label Logical. Whether to label features.
+#' @param label_cex Feature label text size.
+#' @param label_col Feature label color.
+#' @param label_min_width Minimum feature width, in base pairs, required for
+#'   drawing an internal feature label.
 #' @param border_col Feature border color.
 #' @return A track object for \code{plot_integrations()}.
 #' @export
-track_virus_genes <- function(features, height = 0.08, fill = NULL,
-                              label = TRUE, border_col = "white") {
+track_virus_genes <- function(features, height = 0.1, fill = NULL,
+                              label = TRUE, label_cex = 0.32,
+                              label_col = "grey20",
+                              label_min_width = 250,
+                              border_col = "white") {
   structure(
     list(
       type = "virus_genes",
@@ -244,6 +271,9 @@ track_virus_genes <- function(features, height = 0.08, fill = NULL,
       features = normalize_virus_features(features),
       fill = fill,
       label = label,
+      label_cex = label_cex,
+      label_col = label_col,
+      label_min_width = label_min_width,
       border_col = border_col,
       subset = NULL
     ),
@@ -256,11 +286,14 @@ track_virus_genes <- function(features, height = 0.08, fill = NULL,
 #' @param bins Number of bins across the virus genome.
 #' @param fill Histogram fill color.
 #' @param label Optional track label.
+#' @param label_cex Track label text size.
+#' @param label_col Track label color.
 #' @param subset Optional named list of filters.
 #' @return A track object for \code{plot_integrations()}.
 #' @export
 track_virus_density <- function(height = 0.12, bins = 50, fill = "#4D4D4D",
-                                label = NULL, subset = NULL) {
+                                label = NULL, label_cex = 0.8,
+                                label_col = "grey30", subset = NULL) {
   structure(
     list(
       type = "virus_density",
@@ -268,6 +301,8 @@ track_virus_density <- function(height = 0.12, bins = 50, fill = "#4D4D4D",
       bins = bins,
       fill = fill,
       label = label,
+      label_cex = label_cex,
+      label_col = label_col,
       subset = subset
     ),
     class = "vi_track"
@@ -346,7 +381,10 @@ draw_integration_track <- function(track, plot_df, cfg) {
       height = track$height,
       cfg = cfg,
       grid_col = grid_col,
-      border_col = track$border_col
+      border_col = track$border_col,
+      label_cex = track$label_cex,
+      axis_label_cex = track$axis_label_cex,
+      axis = track$axis
     ))
   }
 
@@ -381,6 +419,8 @@ draw_integration_track <- function(track, plot_df, cfg) {
       height = track$height,
       cfg = cfg,
       track_label = track$label,
+      track_label_cex = track$label_cex,
+      track_label_col = track$label_col,
       method_col = track_method_col,
       point_color = point_color,
       baseline_col = track$baseline_col
@@ -405,6 +445,9 @@ draw_integration_track <- function(track, plot_df, cfg) {
       cfg = cfg,
       fill = track$fill,
       label = track$label,
+      label_cex = track$label_cex,
+      label_col = track$label_col,
+      label_min_width = track$label_min_width,
       border_col = track$border_col
     ))
   }
@@ -416,7 +459,9 @@ draw_integration_track <- function(track, plot_df, cfg) {
       cfg = cfg,
       bins = track$bins,
       col = track$fill,
-      track_label = track$label
+      track_label = track$label,
+      track_label_cex = track$label_cex,
+      track_label_col = track$label_col
     ))
   }
 
@@ -462,13 +507,19 @@ draw_integration_track <- function(track, plot_df, cfg) {
 #' @param tracks A list of track objects created by \code{track_*()}.
 #' @param visual_ratio Visual proportion assigned to the virus sector.
 #' @param clear Logical. Whether to clear the current circlize device first.
+#' @param draw Logical. Whether to draw the plot immediately.
 #' @return An object of class \code{vi_integration_plot}.
 #' @export
 plot_integrations <- function(integrations, host = "hg38", virus,
                               tracks = NULL, visual_ratio = 0.1,
-                              clear = TRUE, chrom_file = NULL) {
+                              clear = TRUE, chrom_file = NULL,
+                              draw = TRUE) {
   integrations <- as_integrations(integrations)
-  virus_obj <- virus_genome(virus)
+  virus_obj <- if (inherits(virus, "vi_virus_genome")) {
+    virus
+  } else {
+    virus_genome(virus)
+  }
   host_obj <- if (inherits(host, "vi_host_genome")) {
     host
   } else {
@@ -493,77 +544,49 @@ plot_integrations <- function(integrations, host = "hg38", virus,
 
   tracks <- prepare_integration_tracks(tracks, plot_df)
 
-  if (clear) {
-    circlize::circos.clear()
-  }
-
-  n_sectors <- nrow(cfg$data)
-  gaps <- rep(1, n_sectors)
-  virus_idx <- which(cfg$data$chr == cfg$virus_name)
-  if (length(virus_idx) > 0) {
-    gaps[virus_idx] <- 10
-  }
-
-  circlize::circos.par(
-    start.degree = 90,
-    gap.degree = gaps,
-    cell.padding = c(0, 0, 0, 0),
-    points.overflow.warning = FALSE
-  )
-
-  circlize::circos.genomicInitialize(
-    cfg$data[, c("chr", "start", "end"), drop = FALSE],
-    plotType = NULL,
-    sector.width = cfg$widths
-  )
-
-  for (track in tracks) {
-    draw_integration_track(track, plot_df, cfg)
-  }
-
-  legend_spec <- NULL
-  for (track in tracks) {
-    if (track$type %in% c("sites", "links") &&
-        is.character(track$color) &&
-        length(track$color) == 1L &&
-        track$color %in% colnames(plot_df)) {
-      legend_spec <- resolve_method_colors(plot_df[[track$color]])
-      break
-    }
-  }
-
-  if (!is.null(legend_spec)) {
-    draw_method_legend(legend_spec)
-  }
-
-  structure(
+  out <- structure(
     list(
       integrations = integrations,
       host = host_obj,
       virus = virus_obj,
       cfg = cfg,
       plot_df = plot_df,
-      tracks = tracks
+      tracks = tracks,
+      drawn = FALSE
     ),
     class = "vi_integration_plot"
   )
+
+  if (!is.logical(draw) || length(draw) != 1L || is.na(draw)) {
+    stop("draw must be TRUE or FALSE.", call. = FALSE)
+  }
+
+  if (isTRUE(draw)) {
+    out <- draw_integration_plot(out, clear = clear)
+    out$drawn <- TRUE
+  }
+
+  out
 }
 
 #' @export
 print.vi_integration_plot <- function(x, ...) {
-  if (!is.null(x$plot_df) && !is.null(x$cfg)) {
+  if (isTRUE(x$drawn)) {
     invisible(x)
+  } else if (!is.null(x$plot_df) && !is.null(x$cfg)) {
     return(draw_integration_plot(x))
   }
   invisible(x)
 }
 
-draw_integration_plot <- function(x) {
+draw_integration_plot <- function(x, clear = TRUE) {
   if (!inherits(x, "vi_integration_plot")) {
     stop("x must be a vi_integration_plot object.", call. = FALSE)
   }
 
-  circlize::circos.clear()
+  if (isTRUE(clear)) {
+    circlize::circos.clear()
+  }
 
   n_sectors <- nrow(x$cfg$data)
   gaps <- rep(1, n_sectors)
@@ -589,7 +612,27 @@ draw_integration_plot <- function(x) {
     draw_integration_track(track, x$plot_df, x$cfg)
   }
 
+  legend_spec <- integration_method_legend_spec(x$tracks, x$plot_df)
+  if (!is.null(legend_spec)) {
+    draw_method_legend(legend_spec)
+  }
+
+  x$drawn <- TRUE
   invisible(x)
+}
+
+integration_method_legend_spec <- function(tracks, plot_df) {
+  for (track in tracks) {
+    if (track$type %in% c("sites", "links") &&
+        is.character(track$color) &&
+        length(track$color) == 1L &&
+        track$color %in% colnames(plot_df)) {
+      method_col <- if (!is.null(track$method_col)) track$method_col else NULL
+      return(resolve_method_colors(plot_df[[track$color]], method_col = method_col))
+    }
+  }
+
+  NULL
 }
 
 legacy_layout_to_tracks <- function(layout_list) {
@@ -600,7 +643,10 @@ legacy_layout_to_tracks <- function(layout_list) {
       out[[length(out) + 1L]] <- track_ideogram(
         height = if (is.null(task$height)) 0.08 else task$height,
         grid_col = task$grid_col,
-        border_col = if (is.null(task$border_col)) "white" else task$border_col
+        border_col = if (is.null(task$border_col)) "white" else task$border_col,
+        label_cex = if (is.null(task$label_cex)) 0.52 else task$label_cex,
+        axis_label_cex = if (is.null(task$axis_label_cex)) 0.25 else task$axis_label_cex,
+        axis = if (is.null(task$axis)) "virus" else task$axis
       )
     } else if (task$type == "scatter") {
       out[[length(out) + 1L]] <- track_sites(

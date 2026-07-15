@@ -6,9 +6,12 @@
 \usage{
 track_virus_genes(
   features,
-  height = 0.08,
+  height = 0.1,
   fill = NULL,
   label = TRUE,
+  label_cex = 0.32,
+  label_col = "grey20",
+  label_min_width = 250,
   border_col = "white"
 )
 }
@@ -20,6 +23,13 @@ track_virus_genes(
 \item{fill}{Feature fill color or named vector by feature type.}
 
 \item{label}{Logical. Whether to label features.}
+
+\item{label_cex}{Feature label text size.}
+
+\item{label_col}{Feature label color.}
+
+\item{label_min_width}{Minimum feature width, in base pairs, required for
+drawing an internal feature label.}
 
 \item{border_col}{Feature border color.}
 }
