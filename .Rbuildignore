@@ -7,3 +7,5 @@ CONTEXT.md
 ^docs$
 ^task_plan\.md$"
 Makefile
+task_plan.md
+.codex/
