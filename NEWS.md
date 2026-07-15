@@ -1,3 +1,10 @@
+# virolink 0.0.13
+
+- Updated oncoprint assembly to use the exported
+  `aplotExtra::oncoplot_components()` interface instead of unexported
+  `aplotExtra` internals.
+- Raised the minimum `aplotExtra` version to 0.0.5.1.
+
 # virolink 0.0.12
 
 - Added `plot_integration_signature()` for visualizing candidate clone-like

@@ -34,16 +34,19 @@
 oncoplot <- function(maf, genes = 20, clinical_vars = NULL, n_breaks = 5,
                      colors = NULL, sort_by = NULL,
                      clinical_order = NULL) {
+  components <- aplotExtra::oncoplot_components(maf, genes)
 
   sample_order <- oncoplot_resolve_sample_order(
-    maf, genes, sort_by = sort_by, clinical_order = clinical_order
+    maf,
+    genes,
+    sort_by = sort_by,
+    clinical_order = clinical_order,
+    components = components
   )
 
-  p_main <- oncoplot_main(maf, genes, sample_order = sample_order)
-  p_top <- oncoplot_apply_sample_order(
-    aplotExtra:::oncoplot_sample(maf, genes), sample_order
-  )
-  p_right <- aplotExtra:::oncoplot_gene(maf, genes, ylab = 'percentage')
+  p_main <- oncoplot_apply_sample_order(components$main, sample_order)
+  p_top <- oncoplot_apply_sample_order(components$sample, sample_order)
+  p_right <- components$gene
   p_spacer <- ggplot2::ggplot() + ggfun::theme_transparent()
 
   # Base assembly using aplot
@@ -59,7 +62,8 @@ oncoplot <- function(maf, genes = 20, clinical_vars = NULL, n_breaks = 5,
     n_breaks = n_breaks,
     colors = colors,
     sample_order = sample_order,
-    clinical_order = clinical_order
+    clinical_order = clinical_order,
+    components = components
   )
 
   if (length(tracks) > 0) {
@@ -71,36 +75,13 @@ oncoplot <- function(maf, genes = 20, clinical_vars = NULL, n_breaks = 5,
   return(pp)
 }
 
-
-#' @importFrom ggplot2 geom_tile
-#' @importFrom rlang .data
-oncoplot_main <- function(maf, genes = 20, sample_order = NULL) {
-  d <- aplotExtra:::oncoplot_tidy_onco_matrix(maf, genes)
-  if (!is.null(sample_order)) {
-    d$Sample <- factor(as.character(d$Sample), levels = sample_order)
-  }
-
-  .data <- rlang::.data
-  p <- ggplot2::ggplot(
-    d,
-    ggplot2::aes(x = .data$Sample, y = .data$Gene, fill = .data$Type)
-  ) +
-    ggplot2::geom_tile(colour = "white", linewidth = .01) +
-    oncoplot_setting(continuous = FALSE, fill_name = "Mutation Type") +
-    ggplot2::theme(
-        legend.position = "right",
-        axis.text.y.left = ggplot2::element_text(face = 'italic')
-    )
-
-  p
-}
-
 #' @importFrom maftools getClinicalData
 #' @importFrom rlang .data
 #' @importFrom dplyr select mutate transmute all_of
 oncoplot_clinical_track <- function(maf, genes = 20, clinical_vars, n_breaks,
                                     colors = NULL, sample_order = NULL,
-                                    clinical_order = NULL) {
+                                    clinical_order = NULL,
+                                    components = NULL) {
 
   if (is.null(clinical_vars)) return(list())
 
@@ -111,7 +92,10 @@ oncoplot_clinical_track <- function(maf, genes = 20, clinical_vars, n_breaks,
   )
 
   if (is.null(sample_order)) {
-    onco_matrix <- aplotExtra:::oncoplot_tidy_onco_matrix(maf, genes)
+    if (is.null(components)) {
+      components <- aplotExtra::oncoplot_components(maf, genes)
+    }
+    onco_matrix <- components$data
     sample_order <- unique(as.character(onco_matrix$Sample))
   }
 
@@ -194,8 +178,12 @@ oncoplot_clinical_track <- function(maf, genes = 20, clinical_vars, n_breaks,
 #' Resolve sample order for oncoplot panels
 #' @noRd
 oncoplot_resolve_sample_order <- function(maf, genes, sort_by = NULL,
-                                          clinical_order = NULL) {
-  onco_matrix <- aplotExtra:::oncoplot_tidy_onco_matrix(maf, genes)
+                                          clinical_order = NULL,
+                                          components = NULL) {
+  if (is.null(components)) {
+    components <- aplotExtra::oncoplot_components(maf, genes)
+  }
+  onco_matrix <- components$data
   default_order <- unique(as.character(onco_matrix$Sample))
 
   if (is.null(sort_by)) {
@@ -256,42 +244,6 @@ oncoplot_apply_sample_order <- function(p, sample_order) {
 
   p$data$Sample <- factor(as.character(p$data$Sample), levels = sample_order)
   p
-}
-
-oncoplot_setting <- function(noxaxis = TRUE, continuous = TRUE, scale = 'y',
-                             fill_name = NULL) {  
-    list(
-        ggplot2::theme_minimal(),
-        if (noxaxis) ggfun::theme_noxaxis(),
-        ggplot2::theme(
-          legend.position = "none",
-          panel.grid.major = ggplot2::element_blank()
-        ),
-        aplotExtra:::oncoplot_scale(continuous = continuous, scale = scale),
-        oncoplot_fill(name = fill_name),
-        ggplot2::xlab(NULL),
-        ggplot2::ylab(NULL)
-    )
-}
-
-oncoplot_fill <- function(breaks = NULL, values = NULL, name = NULL, na.value = "#bdbdbd") {
-    vc_col <- aplotExtra:::get_vcColors(websafe = FALSE)
-
-    if (is.null(values)) {
-        values <- vc_col
-    } 
-
-    if (is.null(breaks)) {
-        vc_lev <- names(vc_col)
-        breaks <- rev(vc_lev)
-    }
-
-    ggplot2::scale_fill_manual(
-        name = name,
-        breaks = breaks,
-        values = values,
-        na.value = na.value
-    )
 }
 
 

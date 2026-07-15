@@ -650,19 +650,19 @@ legacy_layout_to_tracks <- function(layout_list) {
 plot_oncoprint <- function(maf, genes = 20, annotations = NULL, numeric_bins = 5,
                            annotation_colors = NULL, sort_by = NULL,
                            annotation_levels = NULL) {
+  components <- aplotExtra::oncoplot_components(maf, genes)
+
   sample_order <- oncoplot_resolve_sample_order(
     maf,
     genes,
     sort_by = sort_by,
-    clinical_order = annotation_levels
+    clinical_order = annotation_levels,
+    components = components
   )
 
-  p_main <- oncoplot_main(maf, genes, sample_order = sample_order)
-  p_top <- oncoplot_apply_sample_order(
-    aplotExtra:::oncoplot_sample(maf, genes),
-    sample_order
-  )
-  p_right <- aplotExtra:::oncoplot_gene(maf, genes, ylab = "percentage")
+  p_main <- oncoplot_apply_sample_order(components$main, sample_order)
+  p_top <- oncoplot_apply_sample_order(components$sample, sample_order)
+  p_right <- components$gene
   p_spacer <- ggplot2::ggplot() + ggfun::theme_transparent()
 
   pp <- p_main |>
@@ -677,7 +677,8 @@ plot_oncoprint <- function(maf, genes = 20, annotations = NULL, numeric_bins = 5
     n_breaks = numeric_bins,
     colors = annotation_colors,
     sample_order = sample_order,
-    clinical_order = annotation_levels
+    clinical_order = annotation_levels,
+    components = components
   )
 
   if (length(tracks) > 0) {
