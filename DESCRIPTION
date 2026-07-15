@@ -1,6 +1,6 @@
 Package: virolink
 Title: Visualization of Viral Integration in Host Genomes
-Version: 0.0.14
+Version: 0.1.4
 Authors@R: c(
   person("Guangchuang", "Yu", email = "guangchuangyu@gmail.com", role = c("aut", "ctb"), comment = c(ORCID = "0000-0002-6485-8781")),
   person("Jianjian", "Sun", email = "2390024611@qq.com", role = c("aut", "cre")),
@@ -12,7 +12,7 @@ Description: Provides a framework for exploring and visualizing viral
 Depends:
     R (>= 4.1.0)
 Imports: 
-    aplotExtra (>= 0.0.5.1),
+    aplotExtra (> 0.0.5),
     aplot,
     circlize,
     dplyr,

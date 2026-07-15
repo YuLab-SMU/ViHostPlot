@@ -1,4 +1,4 @@
-# virolink 0.0.14
+# virolink 0.1.4
 
 - Added `plot_interactive_explorer()` for lightweight interactive exploration
   with a `ggiraph` host-virus breakpoint map and a searchable `DT` integration
@@ -7,14 +7,13 @@
   and configurable table columns for interactive reports.
 - Updated the vignette with a runnable interactive exploration example.
 
-# virolink 0.0.13
+# virolink 0.1.3
 
 - Updated oncoprint assembly to use the exported
   `aplotExtra::oncoplot_components()` interface instead of unexported
   `aplotExtra` internals.
-- Raised the minimum `aplotExtra` version to 0.0.5.1.
 
-# virolink 0.0.12
+# virolink 0.1.2
 
 - Added `plot_integration_signature()` for visualizing candidate clone-like
   breakpoint clusters and viral-strand orientation signatures.
@@ -22,7 +21,7 @@
   breakpoint evidence in the clonality view.
 - Updated the vignette with a runnable mechanism-and-clonality evidence view.
 
-# virolink 0.0.11
+# virolink 0.1.1
 
 - Added `plot_cohort_comparison()` for comparing integration burden across
   samples, cohorts, methods, or other user-supplied grouping columns.
@@ -31,7 +30,7 @@
   categories.
 - Updated the vignette with a runnable cohort-comparison example.
 
-# virolink 0.0.10
+# virolink 0.1.0
 
 - Added `host_features()` to standardize local host annotation intervals for
   locus-level visualization.
